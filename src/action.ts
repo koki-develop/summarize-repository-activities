@@ -85,7 +85,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   // Releases
   core.info("Summarizing releases...");
   summaries.push("# Releases", "");
-  summaries.push("| Title | Published at | Summary |", "| --- | --- | --- |");
+  summaries.push("| Title | Summary |", "| --- | --- |");
   for (const release of releases) {
     await core.group(release.name, async () => {
       await sleep(5000);
@@ -96,7 +96,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** | _${yyyymmdd(release.publishedAt)}_ | ${summary} |`,
+        `| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** (_${yyyymmdd(release.publishedAt)}_) | ${summary} |`,
       );
     });
   }
@@ -116,7 +116,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
+        `| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.mergedAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
       );
     });
   }
@@ -136,7 +136,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`,
+        `| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** (_${yyyymmdd(issue.createdAt)}_) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`,
       );
     });
   }
