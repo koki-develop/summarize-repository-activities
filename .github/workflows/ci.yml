@@ -57,7 +57,7 @@ jobs:
         id: summarize
         with:
           github-token: ${{ github.token }}
-          ai-model: openai/gpt-4o-mini
+          ai-model: gpt-4o-mini
           ai-api-endpoint: https://api.openai.com/v1/chat/completions
           ai-api-key: ${{ secrets.OPENAI_API_KEY }}
           repository: hashicorp/terraform
