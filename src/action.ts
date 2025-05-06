@@ -76,67 +76,62 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   // Releases
   core.info("Summarizing releases...");
   summaries.push("# Releases", "");
+  summaries.push("| Title | Published at | Summary |", "| --- | --- | --- |");
   for (const release of releases) {
-    await core.group(`${release.name}`, async () => {
+    await core.group(`**${release.name}**`, async () => {
       await sleep(5000);
-      summaries.push(
-        `## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`,
-        `_Published at ${yyyymmdd(release.publishedAt)}_`,
-        "",
-      );
       const summary = await ai.summarizeRelease({
         owner,
         repo,
         release,
       });
       core.info(summary);
-      summaries.push(summary, "");
+      summaries.push(
+        `| [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName}) | _${release.publishedAt.toString()}_ | ${summary} |`,
+      );
     });
   }
+  summaries.push("");
 
   // Pull Requests
   core.info("Summarizing pull requests...");
   summaries.push("# Pull Requests", "");
+  summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
   for (const pullRequest of pullRequests) {
-    await core.group(`${pullRequest.title}`, async () => {
+    await core.group(`**${pullRequest.title}**`, async () => {
       await sleep(5000);
-      summaries.push(
-        `## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`,
-        "",
-        `_Merged at ${yyyymmdd(pullRequest.mergedAt)}_`,
-        "",
-      );
       const summary = await ai.summarizePullRequest({
         owner,
         repo,
         pullRequest,
       });
       core.info(summary);
-      summaries.push(summary, "");
+      summaries.push(
+        `| [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
+      );
     });
   }
+  summaries.push("");
 
   // Issues
   core.info("Summarizing issues...");
   summaries.push("# Issues", "");
+  summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
   for (const issue of issues) {
-    await core.group(`${issue.title}`, async () => {
+    await core.group(`**${issue.title}**`, async () => {
       await sleep(5000);
-      summaries.push(
-        `## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`,
-        "",
-        `_Created at ${yyyymmdd(issue.createdAt)}_`,
-        "",
-      );
       const summary = await ai.summarizeIssue({
         owner,
         repo,
         issue,
       });
       core.info(summary);
-      summaries.push(summary, "");
+      summaries.push(
+        `| [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`,
+      );
     });
   }
+  summaries.push("");
 
   return {
     summary: summaries.join("\n"),
