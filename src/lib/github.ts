@@ -32,18 +32,21 @@ export type GetRecentReleasesParams = {
   owner: string;
   repo: string;
   since: Date;
+  limit: number;
 };
 
 export type GetRecentMergedPullRequestsParams = {
   owner: string;
   repo: string;
   since: Date;
+  limit: number;
 };
 
 export type GetRecentIssuesParams = {
   owner: string;
   repo: string;
   since: Date;
+  limit: number;
 };
 
 export class GitHub {
@@ -57,6 +60,7 @@ export class GitHub {
     owner,
     repo,
     since,
+    limit,
   }: GetRecentReleasesParams): Promise<Release[]> {
     const releases: Release[] = [];
 
@@ -88,18 +92,20 @@ export class GitHub {
           publishedAt: new Date(r.published_at!),
         })),
       );
+      if (releases.length >= limit) break;
 
       // Increment page
       page++;
     }
 
-    return releases;
+    return releases.slice(0, limit);
   }
 
   async getRecentMergedPullRequests({
     owner,
     repo,
     since,
+    limit,
   }: GetRecentMergedPullRequestsParams): Promise<PullRequest[]> {
     const pullRequests: PullRequest[] = [];
 
@@ -140,18 +146,20 @@ export class GitHub {
           }),
         })),
       );
+      if (pullRequests.length >= limit) break;
 
       // Increment page
       page++;
     }
 
-    return pullRequests;
+    return pullRequests.slice(0, limit);
   }
 
   async getRecentIssues({
     owner,
     repo,
     since,
+    limit,
   }: GetRecentIssuesParams): Promise<Issue[]> {
     const issues: Issue[] = [];
 
@@ -181,11 +189,12 @@ export class GitHub {
           }),
         })),
       );
+      if (issues.length >= limit) break;
 
       // Increment page
       page++;
     }
 
-    return issues;
+    return issues.slice(0, limit);
   }
 }

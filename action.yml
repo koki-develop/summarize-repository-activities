@@ -23,8 +23,18 @@ inputs:
       The repository to summarize.
       Format: `owner/repo`
     required: true
-  # TODO: limit
-
+  release-limit:
+    description: The maximum number of releases to summarize.
+    required: false
+    default: "10"
+  pull-request-limit:
+    description: The maximum number of pull requests to summarize.
+    required: false
+    default: "10"
+  issue-limit:
+    description: The maximum number of issues to summarize.
+    required: false
+    default: "10"
 outputs:
   summary:
     description: The summary of the repository activities.

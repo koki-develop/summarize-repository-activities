@@ -8,6 +8,9 @@ export type Inputs = {
   aiApiKey: string;
   aiApiEndpoint: string;
   repository: string;
+  releaseLimit: number;
+  pullRequestLimit: number;
+  issueLimit: number;
 };
 
 export type Outputs = {
@@ -38,6 +41,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
         owner,
         repo,
         since,
+        limit: inputs.releaseLimit,
       });
       core.info(`Found ${releases.length} releases`);
       core.debug(JSON.stringify(releases, null, 2));
@@ -53,6 +57,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
         owner,
         repo,
         since,
+        limit: inputs.pullRequestLimit,
       });
       core.info(`Found ${pullRequests.length} pull requests`);
       core.debug(JSON.stringify(pullRequests, null, 2));
@@ -66,6 +71,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       owner,
       repo,
       since,
+      limit: inputs.issueLimit,
     });
     core.info(`Found ${issues.length} issues`);
     core.debug(JSON.stringify(issues, null, 2));

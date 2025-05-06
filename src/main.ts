@@ -20,9 +20,26 @@ export const main = async () => {
         required: true,
         trimWhitespace: true,
       }),
+      releaseLimit: core.getInput("release-limit", {
+        required: true,
+        trimWhitespace: true,
+      }),
+      pullRequestLimit: core.getInput("pull-request-limit", {
+        required: true,
+        trimWhitespace: true,
+      }),
+      issueLimit: core.getInput("issue-limit", {
+        required: true,
+        trimWhitespace: true,
+      }),
     } as const;
 
-    const outputs = await action(inputs);
+    const outputs = await action({
+      ...inputs,
+      releaseLimit: Number(inputs.releaseLimit) || 10,
+      pullRequestLimit: Number(inputs.pullRequestLimit) || 10,
+      issueLimit: Number(inputs.issueLimit) || 10,
+    });
 
     core.setOutput("summary", outputs.summary);
   } catch (error) {
