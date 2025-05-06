@@ -77,7 +77,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   core.info("Summarizing releases...");
   summaries.push("# Releases", "");
   for (const release of releases) {
-    core.group(`${release.name}`, async () => {
+    await core.group(`${release.name}`, async () => {
       await sleep(5000);
       summaries.push(
         `## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`,
@@ -98,7 +98,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   core.info("Summarizing pull requests...");
   summaries.push("# Pull Requests", "");
   for (const pullRequest of pullRequests) {
-    core.group(`${pullRequest.title}`, async () => {
+    await core.group(`${pullRequest.title}`, async () => {
       await sleep(5000);
       summaries.push(
         `## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`,
@@ -120,7 +120,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   core.info("Summarizing issues...");
   summaries.push("# Issues", "");
   for (const issue of issues) {
-    core.group(`${issue.title}`, async () => {
+    await core.group(`${issue.title}`, async () => {
       await sleep(5000);
       summaries.push(
         `## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`,

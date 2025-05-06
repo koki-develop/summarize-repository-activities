@@ -33229,7 +33229,7 @@ const action = async (inputs) => {
     core.info("Summarizing releases...");
     summaries.push("# Releases", "");
     for (const release of releases) {
-        core.group(`${release.name}`, async () => {
+        await core.group(`${release.name}`, async () => {
             await sleep(5000);
             summaries.push(`## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`, `_Published at ${yyyymmdd(release.publishedAt)}_`, "");
             const summary = await ai.summarizeRelease({
@@ -33245,7 +33245,7 @@ const action = async (inputs) => {
     core.info("Summarizing pull requests...");
     summaries.push("# Pull Requests", "");
     for (const pullRequest of pullRequests) {
-        core.group(`${pullRequest.title}`, async () => {
+        await core.group(`${pullRequest.title}`, async () => {
             await sleep(5000);
             summaries.push(`## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`, "", `_Merged at ${yyyymmdd(pullRequest.mergedAt)}_`, "");
             const summary = await ai.summarizePullRequest({
@@ -33261,7 +33261,7 @@ const action = async (inputs) => {
     core.info("Summarizing issues...");
     summaries.push("# Issues", "");
     for (const issue of issues) {
-        core.group(`${issue.title}`, async () => {
+        await core.group(`${issue.title}`, async () => {
             await sleep(5000);
             summaries.push(`## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`, "", `_Created at ${yyyymmdd(issue.createdAt)}_`, "");
             const summary = await ai.summarizeIssue({
