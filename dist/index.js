@@ -33030,8 +33030,7 @@ class AI {
         return summary;
     }
     async _generateText(params) {
-        const endpoint = "https://models.github.ai/inference/chat/completions";
-        const response = await fetch(endpoint, {
+        const response = await fetch(this._config.endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -33066,7 +33065,7 @@ class GitHub {
     constructor(token) {
         this.octokit = (0,github.getOctokit)(token);
     }
-    async getRecentReleases({ owner, repo, since, }) {
+    async getRecentReleases({ owner, repo, since, limit, }) {
         const releases = [];
         let page = 1;
         while (true) {
@@ -33095,42 +33094,31 @@ class GitHub {
                 // biome-ignore lint/style/noNonNullAssertion: <explanation>
                 publishedAt: new Date(r.published_at),
             })));
+            if (releases.length >= limit)
+                break;
             // Increment page
             page++;
         }
-        return releases;
+        return releases.slice(0, limit);
     }
-    async getRecentMergedPullRequests({ owner, repo, since, }) {
+    async getRecentMergedPullRequests({ owner, repo, since, limit, }) {
         const pullRequests = [];
         let page = 1;
         while (true) {
             // Fetch pull requests
-            const response = await this.octokit.rest.pulls.list({
-                owner,
-                repo,
+            const response = await this.octokit.rest.search.issuesAndPullRequests({
+                q: `repo:${owner}/${repo} created:>${since.toISOString()} is:pr`,
                 page,
                 per_page: 100,
-                state: "closed",
-                sort: "updated",
-                direction: "desc",
             });
-            // Filter out pull requests where `merged_at` is before `since`
-            const filtered = response.data.filter((pullRequest) => {
-                if (!pullRequest.merged_at)
-                    return false;
-                if (new Date(pullRequest.merged_at) < since)
-                    return false;
-                return true;
-            });
-            if (filtered.length === 0)
+            if (response.data.items.length === 0)
                 break;
             // Push filtered pull requests
-            pullRequests.push(...filtered.map((p) => ({
+            pullRequests.push(...response.data.items.map((p) => ({
                 number: p.number,
                 title: p.title,
                 body: p.body ?? "",
-                // biome-ignore lint/style/noNonNullAssertion: <explanation>
-                mergedAt: new Date(p.merged_at),
+                createdAt: new Date(p.created_at),
                 labels: p.labels.map((label) => {
                     if (typeof label === "string") {
                         return { name: label, color: "" };
@@ -33138,20 +33126,20 @@ class GitHub {
                     return { name: label.name ?? "", color: label.color ?? "" };
                 }),
             })));
+            if (pullRequests.length >= limit)
+                break;
             // Increment page
             page++;
         }
-        return pullRequests;
+        return pullRequests.slice(0, limit);
     }
-    async getRecentIssues({ owner, repo, since, }) {
+    async getRecentIssues({ owner, repo, since, limit, }) {
         const issues = [];
         let page = 1;
         while (true) {
             // Fetch issues
             const response = await this.octokit.rest.search.issuesAndPullRequests({
                 q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
-                sort: "reactions-+1",
-                order: "desc",
                 page,
                 per_page: 100,
             });
@@ -33169,10 +33157,12 @@ class GitHub {
                     return { name: label.name ?? "", color: label.color ?? "" };
                 }),
             })));
+            if (issues.length >= limit)
+                break;
             // Increment page
             page++;
         }
-        return issues;
+        return issues.slice(0, limit);
     }
 }
 
@@ -33183,22 +33173,24 @@ class GitHub {
 
 const action = async (inputs) => {
     const ai = new AI({
-        model: inputs.model,
-        token: inputs.token,
+        model: inputs.aiModel,
+        token: inputs.aiApiKey,
+        endpoint: inputs.aiApiEndpoint,
     });
-    const github = new GitHub(inputs.token);
+    const github = new GitHub(inputs.githubToken);
     const owner_repo = inputs.repository.split("/");
     if (owner_repo.length !== 2) {
         throw new Error("repository must be in the format of owner/repo");
     }
     const [owner, repo] = owner_repo;
     const since = new Date();
-    since.setDate(since.getUTCDate() - 7);
+    since.setDate(since.getUTCDate() - inputs.daysAgo);
     const releases = await core.group("Fetching recent activities...", async () => {
         const releases = await github.getRecentReleases({
             owner,
             repo,
             since,
+            limit: inputs.releaseLimit,
         });
         core.info(`Found ${releases.length} releases`);
         core.debug(JSON.stringify(releases, null, 2));
@@ -33209,6 +33201,7 @@ const action = async (inputs) => {
             owner,
             repo,
             since,
+            limit: inputs.pullRequestLimit,
         });
         core.info(`Found ${pullRequests.length} pull requests`);
         core.debug(JSON.stringify(pullRequests, null, 2));
@@ -33219,6 +33212,7 @@ const action = async (inputs) => {
             owner,
             repo,
             since,
+            limit: inputs.issueLimit,
         });
         core.info(`Found ${issues.length} issues`);
         core.debug(JSON.stringify(issues, null, 2));
@@ -33228,7 +33222,7 @@ const action = async (inputs) => {
     // Releases
     core.info("Summarizing releases...");
     summaries.push("# Releases", "");
-    summaries.push("| Title | Published at | Summary |", "| --- | --- | --- |");
+    summaries.push("| Title | Summary |", "| --- | --- |");
     for (const release of releases) {
         await core.group(release.name, async () => {
             await sleep(5000);
@@ -33238,7 +33232,7 @@ const action = async (inputs) => {
                 release,
             });
             core.info(summary);
-            summaries.push(`| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** | _${yyyymmdd(release.publishedAt)}_ | ${summary} |`);
+            summaries.push(`| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** (_${yyyymmdd(release.publishedAt)}_) | ${summary} |`);
         });
     }
     summaries.push("");
@@ -33255,7 +33249,7 @@ const action = async (inputs) => {
                 pullRequest,
             });
             core.info(summary);
-            summaries.push(`| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`);
+            summaries.push(`| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.createdAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`);
         });
     }
     summaries.push("");
@@ -33272,7 +33266,7 @@ const action = async (inputs) => {
                 issue,
             });
             core.info(summary);
-            summaries.push(`| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`);
+            summaries.push(`| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** (_${yyyymmdd(issue.createdAt)}_) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`);
         });
     }
     summaries.push("");
@@ -33304,14 +33298,51 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 const main = async () => {
     try {
         const inputs = {
-            model: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("model", { required: false, trimWhitespace: true }),
-            token: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("token", { required: true, trimWhitespace: true }),
+            githubToken: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("github-token", {
+                required: true,
+                trimWhitespace: true,
+            }),
+            daysAgo: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("days-ago", {
+                required: true,
+                trimWhitespace: true,
+            }),
+            aiModel: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("ai-model", {
+                required: true,
+                trimWhitespace: true,
+            }),
+            aiApiEndpoint: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("ai-api-endpoint", {
+                required: true,
+                trimWhitespace: true,
+            }),
+            aiApiKey: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("ai-api-key", {
+                required: true,
+                trimWhitespace: true,
+            }),
             repository: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("repository", {
                 required: true,
                 trimWhitespace: true,
             }),
+            releaseLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("release-limit", {
+                required: true,
+                trimWhitespace: true,
+            }),
+            pullRequestLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("pull-request-limit", {
+                required: true,
+                trimWhitespace: true,
+            }),
+            issueLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("issue-limit", {
+                required: true,
+                trimWhitespace: true,
+            }),
         };
-        const outputs = await (0,_action__WEBPACK_IMPORTED_MODULE_1__/* .action */ .X)(inputs);
+        const outputs = await (0,_action__WEBPACK_IMPORTED_MODULE_1__/* .action */ .X)({
+            ...inputs,
+            githubToken: inputs.githubToken,
+            daysAgo: Number(inputs.daysAgo) || 7,
+            releaseLimit: Number(inputs.releaseLimit) || 10,
+            pullRequestLimit: Number(inputs.pullRequestLimit) || 10,
+            issueLimit: Number(inputs.issueLimit) || 10,
+        });
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("summary", outputs.summary);
     }
     catch (error) {
