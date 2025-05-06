@@ -4,6 +4,7 @@ import { removeChecklist, removeComment } from "./util";
 export type Config = {
   model: string;
   token: string;
+  endpoint: string;
 };
 
 type SummarizeReleaseParams = {
@@ -101,9 +102,7 @@ export class AI {
   }
 
   private async _generateText(params: GenerateTextParams): Promise<string> {
-    const endpoint = "https://models.github.ai/inference/chat/completions";
-
-    const response = await fetch(endpoint, {
+    const response = await fetch(this._config.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

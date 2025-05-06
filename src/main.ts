@@ -4,8 +4,18 @@ import { action } from "./action";
 export const main = async () => {
   try {
     const inputs = {
-      model: core.getInput("model", { required: false, trimWhitespace: true }),
-      token: core.getInput("token", { required: true, trimWhitespace: true }),
+      aiModel: core.getInput("ai-model", {
+        required: true,
+        trimWhitespace: true,
+      }),
+      aiApiEndpoint: core.getInput("ai-api-endpoint", {
+        required: true,
+        trimWhitespace: true,
+      }),
+      aiApiKey: core.getInput("ai-api-key", {
+        required: true,
+        trimWhitespace: true,
+      }),
       repository: core.getInput("repository", {
         required: true,
         trimWhitespace: true,

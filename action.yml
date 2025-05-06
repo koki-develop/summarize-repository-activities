@@ -6,18 +6,24 @@ branding:
   color: white
 
 inputs:
-  model:
-    description: The GitHub Model to use for summarization.
+  ai-model:
+    description: The Model to use for summarization.
     required: false
     default: "openai/gpt-4o-mini"
-  token:
-    description: The GitHub token to use for summarization and fetching activities.
-    required: true
+  ai-api-endpoint:
+    description: The API endpoint for the AI model.
+    required: false
+    default: "https://models.github.ai/inference/chat/completions"
+  ai-api-key:
+    description: The API key for the AI model.
+    required: false
+    default: ${{ github.token }}
   repository:
     description: |
       The repository to summarize.
       Format: `owner/repo`
     required: true
+  # TODO: limit
 
 outputs:
   summary:

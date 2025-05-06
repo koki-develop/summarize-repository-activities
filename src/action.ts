@@ -4,8 +4,9 @@ import { GitHub, type Label } from "./lib/github";
 import { sleep, yyyymmdd } from "./lib/util";
 
 export type Inputs = {
-  model: string;
-  token: string;
+  aiModel: string;
+  aiApiKey: string;
+  aiApiEndpoint: string;
   repository: string;
 };
 
@@ -15,10 +16,11 @@ export type Outputs = {
 
 export const action = async (inputs: Inputs): Promise<Outputs> => {
   const ai = new AI({
-    model: inputs.model,
-    token: inputs.token,
+    model: inputs.aiModel,
+    token: inputs.aiApiKey,
+    endpoint: inputs.aiApiEndpoint,
   });
-  const github = new GitHub(inputs.token);
+  const github = new GitHub(inputs.aiApiKey);
 
   const owner_repo = inputs.repository.split("/");
   if (owner_repo.length !== 2) {
