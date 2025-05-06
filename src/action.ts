@@ -87,7 +87,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName}) | _${release.publishedAt.toString()}_ | ${summary} |`,
+        `| [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName}) | _${yyyymmdd(release.publishedAt)}_ | ${summary} |`,
       );
     });
   }
