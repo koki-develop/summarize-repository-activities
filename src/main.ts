@@ -4,6 +4,10 @@ import { action } from "./action";
 export const main = async () => {
   try {
     const inputs = {
+      githubToken: core.getInput("github-token", {
+        required: true,
+        trimWhitespace: true,
+      }),
       daysAgo: core.getInput("days-ago", {
         required: true,
         trimWhitespace: true,
@@ -40,6 +44,7 @@ export const main = async () => {
 
     const outputs = await action({
       ...inputs,
+      githubToken: inputs.githubToken,
       daysAgo: Number(inputs.daysAgo) || 7,
       releaseLimit: Number(inputs.releaseLimit) || 10,
       pullRequestLimit: Number(inputs.pullRequestLimit) || 10,

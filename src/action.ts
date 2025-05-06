@@ -4,6 +4,7 @@ import { GitHub, type Label } from "./lib/github";
 import { sleep, yyyymmdd } from "./lib/util";
 
 export type Inputs = {
+  githubToken: string;
   daysAgo: number;
   aiModel: string;
   aiApiKey: string;
@@ -24,7 +25,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
     token: inputs.aiApiKey,
     endpoint: inputs.aiApiEndpoint,
   });
-  const github = new GitHub(inputs.aiApiKey);
+  const github = new GitHub(inputs.githubToken);
 
   const owner_repo = inputs.repository.split("/");
   if (owner_repo.length !== 2) {

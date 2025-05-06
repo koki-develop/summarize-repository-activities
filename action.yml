@@ -6,6 +6,9 @@ branding:
   color: white
 
 inputs:
+  github-token:
+    description: The GitHub token.
+    required: true
   days-ago:
     description: Target activities from the specified number of days ago.
     required: false
