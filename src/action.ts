@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import { AI } from "./lib/ai";
 import { GitHub, type Label } from "./lib/github";
 import { sleep, yyyymmdd } from "./lib/util";
@@ -28,75 +29,113 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   const since = new Date();
   since.setDate(since.getUTCDate() - 7);
 
-  const releases = await github.getRecentReleases({
-    owner,
-    repo,
-    since,
-  });
-  const pullRequests = await github.getRecentMergedPullRequests({
-    owner,
-    repo,
-    since,
-  });
-  const issues = await github.getRecentIssues({
-    owner,
-    repo,
-    since,
+  const releases = await core.group(
+    "Fetching recent activities...",
+    async () => {
+      const releases = await github.getRecentReleases({
+        owner,
+        repo,
+        since,
+      });
+      core.info(`Found ${releases.length} releases`);
+      core.debug(JSON.stringify(releases, null, 2));
+
+      return releases;
+    },
+  );
+
+  const pullRequests = await core.group(
+    "Fetching recent merged pull requests...",
+    async () => {
+      const pullRequests = await github.getRecentMergedPullRequests({
+        owner,
+        repo,
+        since,
+      });
+      core.info(`Found ${pullRequests.length} pull requests`);
+      core.debug(JSON.stringify(pullRequests, null, 2));
+
+      return pullRequests;
+    },
+  );
+
+  const issues = await core.group("Fetching recent issues...", async () => {
+    const issues = await github.getRecentIssues({
+      owner,
+      repo,
+      since,
+    });
+    core.info(`Found ${issues.length} issues`);
+    core.debug(JSON.stringify(issues, null, 2));
+
+    return issues;
   });
 
   const summaries: string[] = [];
 
   // Releases
+  core.info("Summarizing releases...");
   summaries.push("# Releases", "");
   for (const release of releases) {
-    await sleep(5000);
-    summaries.push(
-      `## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`,
-      `_Published at ${yyyymmdd(release.publishedAt)}_`,
-      "",
-    );
-    const summary = await ai.summarizeRelease({
-      owner,
-      repo,
-      release,
+    core.group(`${release.name}`, async () => {
+      await sleep(5000);
+      summaries.push(
+        `## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`,
+        `_Published at ${yyyymmdd(release.publishedAt)}_`,
+        "",
+      );
+      const summary = await ai.summarizeRelease({
+        owner,
+        repo,
+        release,
+      });
+      core.info(summary);
+      summaries.push(summary, "");
     });
-    summaries.push(summary, "");
   }
 
   // Pull Requests
+  core.info("Summarizing pull requests...");
   summaries.push("# Pull Requests", "");
   for (const pullRequest of pullRequests) {
-    await sleep(5000);
-    summaries.push(
-      `## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`,
-      "",
-      `_Merged at ${yyyymmdd(pullRequest.mergedAt)}_`,
-      "",
-    );
-    const summary = await ai.summarizePullRequest({
-      owner,
-      repo,
-      pullRequest,
+    core.group(`${pullRequest.title}`, async () => {
+      await sleep(5000);
+      summaries.push(
+        `## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`,
+        "",
+        `_Merged at ${yyyymmdd(pullRequest.mergedAt)}_`,
+        "",
+      );
+      const summary = await ai.summarizePullRequest({
+        owner,
+        repo,
+        pullRequest,
+      });
+      core.info(summary);
+      summaries.push(summary, "");
     });
-    summaries.push(summary, "");
   }
 
   // Issues
+  core.info("Summarizing issues...");
   summaries.push("# Issues", "");
   for (const issue of issues) {
-    await sleep(5000);
-    summaries.push(
-      `## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`,
-      "",
-      `_Created at ${yyyymmdd(issue.createdAt)}_`,
-      "",
-    );
-    const summary = await ai.summarizeIssue({
-      owner,
-      repo,
-      issue,
+    core.group(`${issue.title}`, async () => {
+      await sleep(5000);
+      summaries.push(
+        `## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`,
+        "",
+        `_Created at ${yyyymmdd(issue.createdAt)}_`,
+        "",
+      );
+      const summary = await ai.summarizeIssue({
+        owner,
+        repo,
+        issue,
+      });
+      core.info(summary);
+      summaries.push(summary, "");
     });
-    summaries.push(summary, "");
   }
 
   return {
