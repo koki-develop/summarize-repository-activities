@@ -1,20 +1,27 @@
-name: Hello World
-description: Greet someone and record the time
+name: Summarize Repository Activities
+description: Summarize recent releases, pull requests, and issues of a repository
 
 branding:
   icon: send
   color: white
 
 inputs:
-  message:
-    description: |-
-      The message to echo.
+  model:
+    description: The GitHub Model to use for summarization.
     required: false
-    default: "Hello, world!"
+    default: "openai/gpt-4o-mini"
+  token:
+    description: The GitHub token to use for summarization and fetching activities.
+    required: true
+  repository:
+    description: |
+      The repository to summarize.
+      Format: `owner/repo`
+    required: true
 
 outputs:
-  message:
-    description: The message that was echoed.
+  summary:
+    description: The summary of the repository activities.
 
 runs:
   using: node20
