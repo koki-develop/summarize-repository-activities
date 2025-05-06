@@ -1,3 +1,4 @@
+import { setTimeout } from "node:timers";
 import { format } from "date-fns";
 
 export function removeChecklist(text: string): string {
@@ -15,4 +16,8 @@ export function removeComment(markdown: string): string {
 
 export function yyyymmdd(date: Date): string {
   return format(date, "yyyy/MM/dd");
+}
+
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

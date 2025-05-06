@@ -1,6 +1,6 @@
 import { AI } from "./lib/ai";
 import { GitHub, type Label } from "./lib/github";
-import { yyyymmdd } from "./lib/util";
+import { sleep, yyyymmdd } from "./lib/util";
 
 export type Inputs = {
   model: string;
@@ -49,6 +49,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   // Releases
   summaries.push("# Releases", "");
   for (const release of releases) {
+    await sleep(5000);
     summaries.push(
       `## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`,
       `_Published at ${yyyymmdd(release.publishedAt)}_`,
@@ -65,6 +66,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   // Pull Requests
   summaries.push("# Pull Requests", "");
   for (const pullRequest of pullRequests) {
+    await sleep(5000);
     summaries.push(
       `## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`,
       "",
@@ -82,6 +84,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   // Issues
   summaries.push("# Issues", "");
   for (const issue of issues) {
+    await sleep(5000);
     summaries.push(
       `## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`,
       "",
