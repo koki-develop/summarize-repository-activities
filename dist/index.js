@@ -29791,7 +29791,7 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 7412:
+/***/ 1423:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 
@@ -29800,6 +29800,10 @@ __nccwpck_require__.d(__webpack_exports__, {
   X: () => (/* binding */ action)
 });
 
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(7484);
+;// CONCATENATED MODULE: external "node:timers"
+const external_node_timers_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:timers");
 ;// CONCATENATED MODULE: ./node_modules/date-fns/locale/en-US/_lib/formatDistance.js
 const formatDistanceLocale = {
   lessThanXSeconds: {
@@ -32946,6 +32950,7 @@ function cleanEscapedString(input) {
 
 ;// CONCATENATED MODULE: ./src/lib/util.ts
 
+
 function removeChecklist(text) {
     const checklistRegex = /^[\s]*- \[[x ]\].+(\r?\n|$)/gm;
     return text.replace(checklistRegex, "");
@@ -32958,6 +32963,9 @@ function removeComment(markdown) {
 }
 function yyyymmdd(date) {
     return format(date, "yyyy/MM/dd");
+}
+async function sleep(ms) {
+    return new Promise((resolve) => (0,external_node_timers_namespaceObject.setTimeout)(resolve, ms));
 }
 
 ;// CONCATENATED MODULE: ./src/lib/ai.ts
@@ -33172,6 +33180,7 @@ class GitHub {
 
 
 
+
 const action = async (inputs) => {
     const ai = new AI({
         model: inputs.model,
@@ -33185,57 +33194,84 @@ const action = async (inputs) => {
     const [owner, repo] = owner_repo;
     const since = new Date();
     since.setDate(since.getUTCDate() - 7);
-    const releases = await github.getRecentReleases({
-        owner,
-        repo,
-        since,
+    const releases = await core.group("Fetching recent activities...", async () => {
+        const releases = await github.getRecentReleases({
+            owner,
+            repo,
+            since,
+        });
+        core.info(`Found ${releases.length} releases`);
+        core.debug(JSON.stringify(releases, null, 2));
+        return releases;
     });
-    const pullRequests = await github.getRecentMergedPullRequests({
-        owner,
-        repo,
-        since,
+    const pullRequests = await core.group("Fetching recent merged pull requests...", async () => {
+        const pullRequests = await github.getRecentMergedPullRequests({
+            owner,
+            repo,
+            since,
+        });
+        core.info(`Found ${pullRequests.length} pull requests`);
+        core.debug(JSON.stringify(pullRequests, null, 2));
+        return pullRequests;
     });
-    const issues = await github.getRecentIssues({
-        owner,
-        repo,
-        since,
+    const issues = await core.group("Fetching recent issues...", async () => {
+        const issues = await github.getRecentIssues({
+            owner,
+            repo,
+            since,
+        });
+        core.info(`Found ${issues.length} issues`);
+        core.debug(JSON.stringify(issues, null, 2));
+        return issues;
     });
     const summaries = [];
     // Releases
+    core.info("Summarizing releases...");
     summaries.push("# Releases", "");
     for (const release of releases) {
-        summaries.push(`## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`, `<small>_Published at ${yyyymmdd(release.publishedAt)}_</small>`, "");
-        const summary = await ai.summarizeRelease({
-            owner,
-            repo,
-            release,
+        core.group(`${release.name}`, async () => {
+            await sleep(5000);
+            summaries.push(`## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`, `_Published at ${yyyymmdd(release.publishedAt)}_`, "");
+            const summary = await ai.summarizeRelease({
+                owner,
+                repo,
+                release,
+            });
+            core.info(summary);
+            summaries.push(summary, "");
         });
-        summaries.push(summary, "");
-        break; // TODO: remove
     }
     // Pull Requests
+    core.info("Summarizing pull requests...");
     summaries.push("# Pull Requests", "");
     for (const pullRequest of pullRequests) {
-        summaries.push(`## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`, "", `<small>_Merged at ${yyyymmdd(pullRequest.mergedAt)}_</small>`, "");
-        const summary = await ai.summarizePullRequest({
-            owner,
-            repo,
-            pullRequest,
+        core.group(`${pullRequest.title}`, async () => {
+            await sleep(5000);
+            summaries.push(`## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`, "", `_Merged at ${yyyymmdd(pullRequest.mergedAt)}_`, "");
+            const summary = await ai.summarizePullRequest({
+                owner,
+                repo,
+                pullRequest,
+            });
+            core.info(summary);
+            summaries.push(summary, "");
         });
-        summaries.push(summary, "");
-        break; // TODO: remove
     }
     // Issues
+    core.info("Summarizing issues...");
     summaries.push("# Issues", "");
     for (const issue of issues) {
-        summaries.push(`## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`, "", `<small>_Created at ${yyyymmdd(issue.createdAt)}_</small>`, "");
-        const summary = await ai.summarizeIssue({
-            owner,
-            repo,
-            issue,
+        core.group(`${issue.title}`, async () => {
+            await sleep(5000);
+            summaries.push(`## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`, "", `_Created at ${yyyymmdd(issue.createdAt)}_`, "");
+            const summary = await ai.summarizeIssue({
+                owner,
+                repo,
+                issue,
+            });
+            core.info(summary);
+            summaries.push(summary, "");
         });
-        summaries.push(summary, "");
-        break; // TODO: remove
     }
     return {
         summary: summaries.join("\n"),
@@ -33259,7 +33295,7 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _action__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(7412);
+/* harmony import */ var _action__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(1423);
 
 
 const main = async () => {
