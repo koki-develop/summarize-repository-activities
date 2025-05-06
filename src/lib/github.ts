@@ -113,7 +113,7 @@ export class GitHub {
     while (true) {
       // Fetch pull requests
       const response = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:pr is:merged`,
+        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:pr`,
         page,
         per_page: 100,
       });
@@ -155,7 +155,7 @@ export class GitHub {
     while (true) {
       // Fetch issues
       const response = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue sort:reactions-+1-desc`,
+        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
         page,
         per_page: 100,
       });
