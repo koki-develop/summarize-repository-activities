@@ -78,7 +78,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   summaries.push("# Releases", "");
   summaries.push("| Title | Published at | Summary |", "| --- | --- | --- |");
   for (const release of releases) {
-    await core.group(`**${release.name}**`, async () => {
+    await core.group(release.name, async () => {
       await sleep(5000);
       const summary = await ai.summarizeRelease({
         owner,
@@ -87,7 +87,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName}) | _${yyyymmdd(release.publishedAt)}_ | ${summary} |`,
+        `| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** | _${yyyymmdd(release.publishedAt)}_ | ${summary} |`,
       );
     });
   }
@@ -98,7 +98,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   summaries.push("# Pull Requests", "");
   summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
   for (const pullRequest of pullRequests) {
-    await core.group(`**${pullRequest.title}**`, async () => {
+    await core.group(pullRequest.title, async () => {
       await sleep(5000);
       const summary = await ai.summarizePullRequest({
         owner,
@@ -107,7 +107,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
+        `| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
       );
     });
   }
@@ -118,7 +118,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   summaries.push("# Issues", "");
   summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
   for (const issue of issues) {
-    await core.group(`**${issue.title}**`, async () => {
+    await core.group(issue.title, async () => {
       await sleep(5000);
       const summary = await ai.summarizeIssue({
         owner,
@@ -127,7 +127,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`,
+        `| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`,
       );
     });
   }
