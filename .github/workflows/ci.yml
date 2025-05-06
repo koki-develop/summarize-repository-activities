@@ -35,9 +35,35 @@ jobs:
       - uses: ./
         id: summarize
         with:
-          model: openai/gpt-4o-mini
-          token: ${{ github.token }}
           repository: hashicorp/terraform
+          release-limit: 2
+          pull-request-limit: 2
+          issue-limit: 2
+      - name: Output summary
+        env:
+          SUMMARY: ${{ steps.summarize.outputs.summary }}
+        run: echo "${SUMMARY}" >> "${GITHUB_STEP_SUMMARY}"
+
+  run-action-openai:
+    needs:
+      - test
+      - lint
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: ./
+        id: summarize
+        with:
+          github-token: ${{ github.token }}
+          ai-model: openai/gpt-4o-mini
+          ai-api-endpoint: https://api.openai.com/v1/chat/completions
+          ai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          repository: hashicorp/terraform
+          release-limit: 2
+          pull-request-limit: 2
+          issue-limit: 2
       - name: Output summary
         env:
           SUMMARY: ${{ steps.summarize.outputs.summary }}
