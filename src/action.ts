@@ -4,6 +4,7 @@ import { GitHub, type Label } from "./lib/github";
 import { sleep, yyyymmdd } from "./lib/util";
 
 export type Inputs = {
+  daysAgo: number;
   aiModel: string;
   aiApiKey: string;
   aiApiEndpoint: string;
@@ -32,7 +33,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   const [owner, repo] = owner_repo;
 
   const since = new Date();
-  since.setDate(since.getUTCDate() - 7);
+  since.setDate(since.getUTCDate() - inputs.daysAgo);
 
   const releases = await core.group(
     "Fetching recent activities...",

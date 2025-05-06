@@ -6,6 +6,10 @@ branding:
   color: white
 
 inputs:
+  days-ago:
+    description: Target activities from the specified number of days ago.
+    required: false
+    default: "7"
   ai-model:
     description: The Model to use for summarization.
     required: false

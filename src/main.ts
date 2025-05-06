@@ -4,6 +4,10 @@ import { action } from "./action";
 export const main = async () => {
   try {
     const inputs = {
+      daysAgo: core.getInput("days-ago", {
+        required: true,
+        trimWhitespace: true,
+      }),
       aiModel: core.getInput("ai-model", {
         required: true,
         trimWhitespace: true,
@@ -36,6 +40,7 @@ export const main = async () => {
 
     const outputs = await action({
       ...inputs,
+      daysAgo: Number(inputs.daysAgo) || 7,
       releaseLimit: Number(inputs.releaseLimit) || 10,
       pullRequestLimit: Number(inputs.pullRequestLimit) || 10,
       issueLimit: Number(inputs.issueLimit) || 10,
