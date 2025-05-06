@@ -60,8 +60,6 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       release,
     });
     summaries.push(summary, "");
-
-    break; // TODO: remove
   }
 
   // Pull Requests
@@ -79,8 +77,6 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       pullRequest,
     });
     summaries.push(summary, "");
-
-    break; // TODO: remove
   }
 
   // Issues
@@ -98,8 +94,6 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       issue,
     });
     summaries.push(summary, "");
-
-    break; // TODO: remove
   }
 
   return {
