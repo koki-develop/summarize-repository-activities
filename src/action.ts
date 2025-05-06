@@ -116,7 +116,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
       });
       core.info(summary);
       summaries.push(
-        `| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.mergedAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
+        `| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.createdAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
       );
     });
   }

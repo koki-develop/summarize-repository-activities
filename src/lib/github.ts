@@ -11,7 +11,7 @@ export type PullRequest = {
   number: number;
   title: string;
   body: string;
-  mergedAt: Date;
+  createdAt: Date;
   labels: Label[];
 };
 
@@ -112,32 +112,20 @@ export class GitHub {
     let page = 1;
     while (true) {
       // Fetch pull requests
-      const response = await this.octokit.rest.pulls.list({
-        owner,
-        repo,
+      const response = await this.octokit.rest.search.issuesAndPullRequests({
+        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:pr is:merged`,
         page,
         per_page: 100,
-        state: "closed",
-        sort: "updated",
-        direction: "desc",
       });
-
-      // Filter out pull requests where `merged_at` is before `since`
-      const filtered = response.data.filter((pullRequest) => {
-        if (!pullRequest.merged_at) return false;
-        if (new Date(pullRequest.merged_at) < since) return false;
-        return true;
-      });
-      if (filtered.length === 0) break;
+      if (response.data.items.length === 0) break;
 
       // Push filtered pull requests
       pullRequests.push(
-        ...filtered.map((p) => ({
+        ...response.data.items.map((p) => ({
           number: p.number,
           title: p.title,
           body: p.body ?? "",
-          // biome-ignore lint/style/noNonNullAssertion: <explanation>
-          mergedAt: new Date(p.merged_at!),
+          createdAt: new Date(p.created_at),
           labels: p.labels.map((label): Label => {
             if (typeof label === "string") {
               return { name: label, color: "" };
@@ -167,9 +155,7 @@ export class GitHub {
     while (true) {
       // Fetch issues
       const response = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
-        sort: "reactions-+1",
-        order: "desc",
+        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue sort:reactions-+1-desc`,
         page,
         per_page: 100,
       });
