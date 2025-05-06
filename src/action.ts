@@ -51,7 +51,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   for (const release of releases) {
     summaries.push(
       `## [${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})`,
-      `<small>_Published at ${yyyymmdd(release.publishedAt)}_</small>`,
+      `_Published at ${yyyymmdd(release.publishedAt)}_`,
       "",
     );
     const summary = await ai.summarizeRelease({
@@ -70,7 +70,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
     summaries.push(
       `## [${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number}) ${_labelsToBadges(owner, repo, pullRequest.labels)}`,
       "",
-      `<small>_Merged at ${yyyymmdd(pullRequest.mergedAt)}_</small>`,
+      `_Merged at ${yyyymmdd(pullRequest.mergedAt)}_`,
       "",
     );
     const summary = await ai.summarizePullRequest({
@@ -89,7 +89,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
     summaries.push(
       `## [${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number}) ${_labelsToBadges(owner, repo, issue.labels)}`,
       "",
-      `<small>_Created at ${yyyymmdd(issue.createdAt)}_</small>`,
+      `_Created at ${yyyymmdd(issue.createdAt)}_`,
       "",
     );
     const summary = await ai.summarizeIssue({
