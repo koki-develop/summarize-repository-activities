@@ -29,7 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: ./
+        id: summarize
         with:
           model: openai/gpt-4o-mini
           token: ${{ github.token }}
           repository: hashicorp/terraform
+      - name: Output summary
+        env:
+          SUMMARY: ${{ steps.summarize.outputs.summary }}
+        run: echo "${SUMMARY}" >> "${GITHUB_STEP_SUMMARY}"
