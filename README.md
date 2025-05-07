@@ -24,6 +24,7 @@ Summarize recent releases, pull requests, and issues of a repository.
 
 - run: echo "$SUMMARY"
   env:
+    # `outputs.summary` contains the generated summary as a Markdown formatted string.
     SUMMARY: ${{ steps.summarize.outputs.summary }}
 ```
 
