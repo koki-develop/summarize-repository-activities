@@ -2,8 +2,8 @@ name: Summarize Repository Activities
 description: Summarize recent releases, pull requests, and issues of a repository
 
 branding:
-  icon: send
-  color: white
+  icon: eye
+  color: black
 
 inputs:
   github-token:
