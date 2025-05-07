@@ -1,0 +1,64 @@
+name: Summarize
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: |
+          The repository to summarize.
+          Format: `owner/repo`
+        required: true
+
+jobs:
+  github-models:
+    permissions:
+      contents: read
+      models: read
+    strategy:
+      matrix:
+        locale:
+          - en
+          - ja
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: ./
+        id: summarize
+        with:
+          repository: ${{ inputs.repository }}
+          locale: ${{ matrix.locale }}
+          release-limit: 2
+          pull-request-limit: 2
+          issue-limit: 2
+      - name: Output summary
+        env:
+          SUMMARY: ${{ steps.summarize.outputs.summary }}
+        run: echo "${SUMMARY}" >> "${GITHUB_STEP_SUMMARY}"
+
+  openai:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        locale:
+          - en
+          - ja
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: ./
+        id: summarize
+        with:
+          github-token: ${{ github.token }}
+          locale: ${{ matrix.locale }}
+          ai-model: gpt-4o-mini
+          ai-api-endpoint: https://api.openai.com/v1/chat/completions
+          ai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          repository: ${{ inputs.repository }}
+          release-limit: 2
+          pull-request-limit: 2
+          issue-limit: 2
+      - name: Output summary
+        env:
+          SUMMARY: ${{ steps.summarize.outputs.summary }}
+        run: echo "${SUMMARY}" >> "${GITHUB_STEP_SUMMARY}"
