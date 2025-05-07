@@ -4,13 +4,27 @@ on:
   workflow_dispatch:
     inputs:
       repository:
+        type: string
         description: |
           The repository to summarize.
           Format: `owner/repo`
         required: true
+      github-models:
+        type: boolean
+        description: |
+          Whether to use GitHub Models.
+        required: false
+        default: true
+      openai:
+        type: boolean
+        description: |
+          Whether to use OpenAI.
+        required: false
+        default: true
 
 jobs:
   github-models:
+    if: ${{ inputs.github-models }}
     permissions:
       contents: read
       models: read
@@ -36,6 +50,7 @@ jobs:
         run: echo "${SUMMARY}" >> "${GITHUB_STEP_SUMMARY}"
 
   openai:
+    if: ${{ inputs.openai }}
     permissions:
       contents: read
     runs-on: ubuntu-latest
