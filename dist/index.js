@@ -32970,6 +32970,60 @@ async function sleep(ms) {
 
 ;// CONCATENATED MODULE: ./src/lib/ai.ts
 
+
+const prompts = {
+    release: (owner, repo) => ({
+        ja: `
+あなたは ${owner}/${repo} リポジトリのリリースノートの内容を要約するアシスタントです。
+以下の条件に基づいて、ユーザーから提供されたリリースノートの内容を日本語で簡潔に要約してください。
+
+- 要約のフォーマットはプレーンテキストを使用してください。
+- 要約は 200 文字程度に収めてください。
+- 文体は「ですます調」を使用してください。
+`.trim(),
+        en: `
+You are an assistant tasked with summarizing the content of release notes for the ${owner}/${repo} repository.
+Please provide a concise summary in English of the release notes provided by the user, based on the following conditions:
+
+- Use plain text format for the summary.
+- Keep the summary to approximately 400 characters.
+`.trim(),
+    }),
+    pullRequest: (owner, repo) => ({
+        ja: `
+あなたは ${owner}/${repo} リポジトリの Pull Request の内容を要約するアシスタントです。
+以下の条件に基づいて、ユーザーから提供された Pull Request の内容を日本語で簡潔に要約してください。
+
+- 要約のフォーマットはプレーンテキストを使用してください。
+- 要約は 200 文字程度に収めてください。
+- 文体は「ですます調」を使用してください。
+`.trim(),
+        en: `
+You are an assistant tasked with summarizing the content of Pull Requests for the ${owner}/${repo} repository.
+Please provide a concise summary in English of the Pull Request content provided by the user, based on the following conditions:
+
+- Use plain text format for the summary.
+- Keep the summary to approximately 400 characters.
+`.trim(),
+    }),
+    issue: (owner, repo) => ({
+        ja: `
+あなたは ${owner}/${repo} リポジトリの Issue の内容を要約するアシスタントです。
+以下の条件に基づいて、ユーザーから提供された Issue の内容を日本語で簡潔に要約してください。
+
+- 要約のフォーマットはプレーンテキストを使用してください。
+- 要約は 200 文字程度に収めてください。
+- 文体は「ですます調」を使用してください。
+`.trim(),
+        en: `
+You are an assistant tasked with summarizing the content of Issues for the ${owner}/${repo} repository.
+Please provide a concise summary in English of the Issue content provided by the user, based on the following conditions:
+
+- Use plain text format for the summary.
+- Keep the summary to approximately 400 characters.
+`.trim(),
+    }),
+};
 class AI {
     _config;
     constructor(config) {
@@ -32981,14 +33035,7 @@ class AI {
                 name: params.release.name,
                 body: _cleanMarkdown(params.release.body),
             }),
-            systemPrompt: `
-あなたは ${params.owner}/${params.repo} リポジトリのリリースノートの内容を要約するアシスタントです。
-以下の条件に基づいて、ユーザーから提供されたリリースノートの内容を日本語で簡潔に要約してください。
-
-- 要約のフォーマットはプレーンテキストを使用してください。
-- 要約は 200 文字程度に収めてください。
-- 文体は「ですます調」を使用してください。
-`.trim(),
+            systemPrompt: prompts.release(params.owner, params.repo)[this._config.locale],
             maxTokens: 4000,
         });
         return summary.trim();
@@ -32999,14 +33046,7 @@ class AI {
                 title: params.pullRequest.title,
                 body: _cleanMarkdown(params.pullRequest.body),
             }),
-            systemPrompt: `
-あなたは ${params.owner}/${params.repo} リポジトリの Pull Request の内容を要約するアシスタントです。
-以下の条件に基づいて、ユーザーから提供された Pull Request の内容を日本語で簡潔に要約してください。
-
-- 要約のフォーマットはプレーンテキストを使用してください。
-- 要約は 200 文字程度に収めてください。
-- 文体は「ですます調」を使用してください。
-`.trim(),
+            systemPrompt: prompts.pullRequest(params.owner, params.repo)[this._config.locale],
             maxTokens: 4000,
         });
         return summary;
@@ -33017,19 +33057,15 @@ class AI {
                 title: params.issue.title,
                 body: _cleanMarkdown(params.issue.body),
             }),
-            systemPrompt: `
-あなたは ${params.owner}/${params.repo} リポジトリの Issue の内容を要約するアシスタントです。
-以下の条件に基づいて、ユーザーから提供された Issue の内容を日本語で簡潔に要約してください。
-
-- 要約のフォーマットはプレーンテキストを使用してください。
-- 要約は 200 文字程度に収めてください。
-- 文体は「ですます調」を使用してください。
-`.trim(),
+            systemPrompt: prompts.issue(params.owner, params.repo)[this._config.locale],
             maxTokens: 4000,
         });
         return summary;
     }
     async _generateText(params) {
+        core.debug(`Generating text with ${this._config.model}`);
+        core.debug(`systemPrompt: ${JSON.stringify(params.systemPrompt)}`);
+        core.debug(`prompt: ${JSON.stringify(params.prompt)}`);
         const response = await fetch(this._config.endpoint, {
             method: "POST",
             headers: {
@@ -33176,6 +33212,7 @@ const action = async (inputs) => {
         model: inputs.aiModel,
         token: inputs.aiApiKey,
         endpoint: inputs.aiApiEndpoint,
+        locale: inputs.locale,
     });
     const github = new GitHub(inputs.githubToken);
     const owner_repo = inputs.repository.split("/");
@@ -33302,6 +33339,10 @@ const main = async () => {
                 required: true,
                 trimWhitespace: true,
             }),
+            locale: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("locale", {
+                required: true,
+                trimWhitespace: true,
+            }),
             daysAgo: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("days-ago", {
                 required: true,
                 trimWhitespace: true,
@@ -33335,8 +33376,12 @@ const main = async () => {
                 trimWhitespace: true,
             }),
         };
+        if (inputs.locale !== "en" && inputs.locale !== "ja") {
+            throw new Error(`Invalid locale: ${inputs.locale} (valid values: "en", "ja")`);
+        }
         const outputs = await (0,_action__WEBPACK_IMPORTED_MODULE_1__/* .action */ .X)({
             ...inputs,
+            locale: inputs.locale,
             githubToken: inputs.githubToken,
             daysAgo: Number(inputs.daysAgo) || 7,
             releaseLimit: Number(inputs.releaseLimit) || 10,
