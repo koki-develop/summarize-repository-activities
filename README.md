@@ -9,7 +9,7 @@ Summarize recent releases, pull requests, and issues of a repository.
 ## Usage
 
 ```yaml
-- uses: koki-develop/summarize-repository-activities@v1
+- uses: koki-develop/summarize-repository-activities@v0
   with:
     github-token: ${{ github.token }}
 
@@ -40,7 +40,7 @@ To customize the API used, specify `ai-api-endpoint` and `ai-api-key`.
 
 ```yaml
 # e.g. Use OpenAI API
-- uses: koki-develop/summarize-repository-activities@v1
+- uses: koki-develop/summarize-repository-activities@v0
   with:
     # ...
     ai-api-endpoint: https://api.openai.com/v1/chat/completions
