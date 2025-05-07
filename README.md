@@ -36,6 +36,8 @@ permissions:
   models: read # to use GitHub Models
 ```
 
+For other configuration options, please refer to [action.yml](./action.yml).
+
 ### Using any compatible API for summarization
 
 Summarize Repository Activities uses the GitHub Models API (`https://models.github.ai/inference/chat/completions`) by default to generate summaries, but you can also use any compatible API if needed.  
