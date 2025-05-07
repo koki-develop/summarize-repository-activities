@@ -37,15 +37,15 @@ inputs:
       The repository to summarize.
       Format: `owner/repo`
     required: true
-  release-limit:
+  releases-limit:
     description: The maximum number of releases to summarize.
     required: false
     default: "10"
-  pull-request-limit:
+  pull-requests-limit:
     description: The maximum number of pull requests to summarize.
     required: false
     default: "10"
-  issue-limit:
+  issues-limit:
     description: The maximum number of issues to summarize.
     required: false
     default: "10"

@@ -32,15 +32,15 @@ export const main = async () => {
         required: true,
         trimWhitespace: true,
       }),
-      releaseLimit: core.getInput("release-limit", {
+      releasesLimit: core.getInput("releases-limit", {
         required: true,
         trimWhitespace: true,
       }),
-      pullRequestLimit: core.getInput("pull-request-limit", {
+      pullRequestsLimit: core.getInput("pull-requests-limit", {
         required: true,
         trimWhitespace: true,
       }),
-      issueLimit: core.getInput("issue-limit", {
+      issuesLimit: core.getInput("issues-limit", {
         required: true,
         trimWhitespace: true,
       }),
@@ -57,9 +57,9 @@ export const main = async () => {
       locale: inputs.locale,
       githubToken: inputs.githubToken,
       daysAgo: Number(inputs.daysAgo) || 7,
-      releaseLimit: Number(inputs.releaseLimit) || 10,
-      pullRequestLimit: Number(inputs.pullRequestLimit) || 10,
-      issueLimit: Number(inputs.issueLimit) || 10,
+      releasesLimit: Number(inputs.releasesLimit) || 10,
+      pullRequestsLimit: Number(inputs.pullRequestsLimit) || 10,
+      issuesLimit: Number(inputs.issuesLimit) || 10,
     });
 
     core.setOutput("summary", outputs.summary);

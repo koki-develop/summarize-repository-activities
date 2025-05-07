@@ -33227,7 +33227,7 @@ const action = async (inputs) => {
             owner,
             repo,
             since,
-            limit: inputs.releaseLimit,
+            limit: inputs.releasesLimit,
         });
         core.info(`Found ${releases.length} releases`);
         core.debug(JSON.stringify(releases, null, 2));
@@ -33238,7 +33238,7 @@ const action = async (inputs) => {
             owner,
             repo,
             since,
-            limit: inputs.pullRequestLimit,
+            limit: inputs.pullRequestsLimit,
         });
         core.info(`Found ${pullRequests.length} pull requests`);
         core.debug(JSON.stringify(pullRequests, null, 2));
@@ -33249,7 +33249,7 @@ const action = async (inputs) => {
             owner,
             repo,
             since,
-            limit: inputs.issueLimit,
+            limit: inputs.issuesLimit,
         });
         core.info(`Found ${issues.length} issues`);
         core.debug(JSON.stringify(issues, null, 2));
@@ -33363,15 +33363,15 @@ const main = async () => {
                 required: true,
                 trimWhitespace: true,
             }),
-            releaseLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("release-limit", {
+            releasesLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("releases-limit", {
                 required: true,
                 trimWhitespace: true,
             }),
-            pullRequestLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("pull-request-limit", {
+            pullRequestsLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("pull-requests-limit", {
                 required: true,
                 trimWhitespace: true,
             }),
-            issueLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("issue-limit", {
+            issuesLimit: _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("issues-limit", {
                 required: true,
                 trimWhitespace: true,
             }),
@@ -33384,9 +33384,9 @@ const main = async () => {
             locale: inputs.locale,
             githubToken: inputs.githubToken,
             daysAgo: Number(inputs.daysAgo) || 7,
-            releaseLimit: Number(inputs.releaseLimit) || 10,
-            pullRequestLimit: Number(inputs.pullRequestLimit) || 10,
-            issueLimit: Number(inputs.issueLimit) || 10,
+            releasesLimit: Number(inputs.releasesLimit) || 10,
+            pullRequestsLimit: Number(inputs.pullRequestsLimit) || 10,
+            issuesLimit: Number(inputs.issuesLimit) || 10,
         });
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("summary", outputs.summary);
     }

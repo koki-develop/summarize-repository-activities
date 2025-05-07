@@ -41,9 +41,9 @@ jobs:
         with:
           repository: ${{ inputs.repository }}
           locale: ${{ matrix.locale }}
-          release-limit: 2
-          pull-request-limit: 2
-          issue-limit: 2
+          releases-limit: 2
+          pull-requests-limit: 2
+          issues-limit: 2
       - name: Output summary
         env:
           SUMMARY: ${{ steps.summarize.outputs.summary }}
@@ -70,9 +70,9 @@ jobs:
           ai-api-endpoint: https://api.openai.com/v1/chat/completions
           ai-api-key: ${{ secrets.OPENAI_API_KEY }}
           repository: ${{ inputs.repository }}
-          release-limit: 2
-          pull-request-limit: 2
-          issue-limit: 2
+          releases-limit: 2
+          pull-requests-limit: 2
+          issues-limit: 2
       - name: Output summary
         env:
           SUMMARY: ${{ steps.summarize.outputs.summary }}
