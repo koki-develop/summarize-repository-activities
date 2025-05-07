@@ -10,19 +10,21 @@ Summarize recent releases, pull requests, and issues of a repository.
 
 ```yaml
 - uses: koki-develop/summarize-repository-activities@v0
+  id: summarize
   with:
     github-token: ${{ github.token }}
-
     # Target activities from the specified number of days ago.
     # (default: 7)
     days-ago: 7
-
     # The Model to use for summarization.
     # (default: openai/gpt-4o-mini)
     ai-model: openai/gpt-4o-mini
-
     # The repository to summarize.
     repository: hashicorp/terraform
+
+- run: echo "$SUMMARY"
+  env:
+    SUMMARY: ${{ steps.summarize.outputs.summary }}
 ```
 
 Summarize Repository Activities uses GitHub Models by default, so the following permissions are required.
@@ -41,6 +43,7 @@ To customize the API used, specify `ai-api-endpoint` and `ai-api-key`.
 ```yaml
 # e.g. Use OpenAI API
 - uses: koki-develop/summarize-repository-activities@v0
+  id: summarize
   with:
     # ...
     ai-api-endpoint: https://api.openai.com/v1/chat/completions
