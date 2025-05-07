@@ -33258,7 +33258,7 @@ const action = async (inputs) => {
     const summaries = [];
     // Releases
     core.info("Summarizing releases...");
-    summaries.push("# Releases", "");
+    summaries.push("## Releases", "");
     summaries.push("| Title | Summary |", "| --- | --- |");
     for (const release of releases) {
         await core.group(release.name, async () => {
@@ -33275,7 +33275,7 @@ const action = async (inputs) => {
     summaries.push("");
     // Pull Requests
     core.info("Summarizing pull requests...");
-    summaries.push("# Pull Requests", "");
+    summaries.push("## Pull Requests", "");
     summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
     for (const pullRequest of pullRequests) {
         await core.group(pullRequest.title, async () => {
@@ -33292,7 +33292,7 @@ const action = async (inputs) => {
     summaries.push("");
     // Issues
     core.info("Summarizing issues...");
-    summaries.push("# Issues", "");
+    summaries.push("## Issues", "");
     summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
     for (const issue of issues) {
         await core.group(issue.title, async () => {
