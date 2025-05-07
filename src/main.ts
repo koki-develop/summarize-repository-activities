@@ -8,6 +8,10 @@ export const main = async () => {
         required: true,
         trimWhitespace: true,
       }),
+      locale: core.getInput("locale", {
+        required: true,
+        trimWhitespace: true,
+      }),
       daysAgo: core.getInput("days-ago", {
         required: true,
         trimWhitespace: true,
@@ -42,8 +46,15 @@ export const main = async () => {
       }),
     } as const;
 
+    if (inputs.locale !== "en" && inputs.locale !== "ja") {
+      throw new Error(
+        `Invalid locale: ${inputs.locale} (valid values: "en", "ja")`,
+      );
+    }
+
     const outputs = await action({
       ...inputs,
+      locale: inputs.locale,
       githubToken: inputs.githubToken,
       daysAgo: Number(inputs.daysAgo) || 7,
       releaseLimit: Number(inputs.releaseLimit) || 10,

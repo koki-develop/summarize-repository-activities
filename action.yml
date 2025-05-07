@@ -10,6 +10,12 @@ inputs:
     description: The GitHub token.
     required: false
     default: ${{ github.token }}
+  locale:
+    description: |
+      The locale to use for summarization.
+      Valid values: "ja", "en"
+    required: false
+    default: "en"
   days-ago:
     description: Target activities from the specified number of days ago.
     required: false

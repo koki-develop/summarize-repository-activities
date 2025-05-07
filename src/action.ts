@@ -1,10 +1,11 @@
 import * as core from "@actions/core";
-import { AI } from "./lib/ai";
+import { AI, type Locale } from "./lib/ai";
 import { GitHub, type Label } from "./lib/github";
 import { sleep, yyyymmdd } from "./lib/util";
 
 export type Inputs = {
   githubToken: string;
+  locale: Locale;
   daysAgo: number;
   aiModel: string;
   aiApiKey: string;
@@ -24,6 +25,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
     model: inputs.aiModel,
     token: inputs.aiApiKey,
     endpoint: inputs.aiApiEndpoint,
+    locale: inputs.locale,
   });
   const github = new GitHub(inputs.githubToken);
 

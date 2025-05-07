@@ -1,7 +1,65 @@
 import type { Issue, PullRequest, Release } from "./github";
 import { removeChecklist, removeComment } from "./util";
 
+export type Locale = "ja" | "en";
+
+const prompts = {
+  release: (owner: string, repo: string): Record<Locale, string> => ({
+    ja: `
+あなたは ${owner}/${repo} リポジトリのリリースノートの内容を要約するアシスタントです。
+以下の条件に基づいて、ユーザーから提供されたリリースノートの内容を日本語で簡潔に要約してください。
+
+- 要約のフォーマットはプレーンテキストを使用してください。
+- 要約は 200 文字程度に収めてください。
+- 文体は「ですます調」を使用してください。
+`.trim(),
+    en: `
+You are an assistant tasked with summarizing the content of release notes for the ${owner}/${repo} repository.
+Please provide a concise summary in English of the release notes provided by the user, based on the following conditions:
+
+- Use plain text format for the summary.
+- Keep the summary to approximately 400 characters.
+`.trim(),
+  }),
+
+  pullRequest: (owner: string, repo: string): Record<Locale, string> => ({
+    ja: `
+あなたは ${owner}/${repo} リポジトリの Pull Request の内容を要約するアシスタントです。
+以下の条件に基づいて、ユーザーから提供された Pull Request の内容を日本語で簡潔に要約してください。
+
+- 要約のフォーマットはプレーンテキストを使用してください。
+- 要約は 200 文字程度に収めてください。
+- 文体は「ですます調」を使用してください。
+`.trim(),
+    en: `
+You are an assistant tasked with summarizing the content of Pull Requests for the ${owner}/${repo} repository.
+Please provide a concise summary in English of the Pull Request content provided by the user, based on the following conditions:
+
+- Use plain text format for the summary.
+- Keep the summary to approximately 400 characters.
+`.trim(),
+  }),
+
+  issue: (owner: string, repo: string): Record<Locale, string> => ({
+    ja: `
+あなたは ${owner}/${repo} リポジトリの Issue の内容を要約するアシスタントです。
+以下の条件に基づいて、ユーザーから提供された Issue の内容を日本語で簡潔に要約してください。
+
+- 要約のフォーマットはプレーンテキストを使用してください。
+- 要約は 200 文字程度に収めてください。
+- 文体は「ですます調」を使用してください。
+`.trim(),
+    en: `
+You are an assistant tasked with summarizing the content of Issues for the ${owner}/${repo} repository.
+Please provide a concise summary in English of the Issue content provided by the user, based on the following conditions:
+
+- Use plain text format for the summary.
+- Keep the summary to approximately 400 characters.
+`.trim(),
+  }),
+};
 export type Config = {
+  locale: Locale;
   model: string;
   token: string;
   endpoint: string;
@@ -44,15 +102,9 @@ export class AI {
         name: params.release.name,
         body: _cleanMarkdown(params.release.body),
       }),
-      systemPrompt: `
-あなたは ${params.owner}/${params.repo} リポジトリのリリースノートの内容を要約するアシスタントです。
-以下の条件に基づいて、ユーザーから提供されたリリースノートの内容を日本語で簡潔に要約してください。
-
-- 要約のフォーマットはプレーンテキストを使用してください。
-- 要約は 200 文字程度に収めてください。
-- 文体は「ですます調」を使用してください。
-`.trim(),
-
+      systemPrompt: prompts.release(params.owner, params.repo)[
+        this._config.locale
+      ],
       maxTokens: 4000,
     });
 
@@ -67,14 +119,9 @@ export class AI {
         title: params.pullRequest.title,
         body: _cleanMarkdown(params.pullRequest.body),
       }),
-      systemPrompt: `
-あなたは ${params.owner}/${params.repo} リポジトリの Pull Request の内容を要約するアシスタントです。
-以下の条件に基づいて、ユーザーから提供された Pull Request の内容を日本語で簡潔に要約してください。
-
-- 要約のフォーマットはプレーンテキストを使用してください。
-- 要約は 200 文字程度に収めてください。
-- 文体は「ですます調」を使用してください。
-`.trim(),
+      systemPrompt: prompts.pullRequest(params.owner, params.repo)[
+        this._config.locale
+      ],
       maxTokens: 4000,
     });
 
@@ -87,14 +134,9 @@ export class AI {
         title: params.issue.title,
         body: _cleanMarkdown(params.issue.body),
       }),
-      systemPrompt: `
-あなたは ${params.owner}/${params.repo} リポジトリの Issue の内容を要約するアシスタントです。
-以下の条件に基づいて、ユーザーから提供された Issue の内容を日本語で簡潔に要約してください。
-
-- 要約のフォーマットはプレーンテキストを使用してください。
-- 要約は 200 文字程度に収めてください。
-- 文体は「ですます調」を使用してください。
-`.trim(),
+      systemPrompt: prompts.issue(params.owner, params.repo)[
+        this._config.locale
+      ],
       maxTokens: 4000,
     });
 
