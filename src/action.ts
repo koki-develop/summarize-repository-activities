@@ -38,21 +38,18 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   const since = new Date();
   since.setDate(since.getUTCDate() - inputs.daysAgo);
 
-  const releases = await core.group(
-    "Fetching recent activities...",
-    async () => {
-      const releases = await github.getRecentReleases({
-        owner,
-        repo,
-        since,
-        limit: inputs.releasesLimit,
-      });
-      core.info(`Found ${releases.length} releases`);
-      core.debug(JSON.stringify(releases, null, 2));
+  const releases = await core.group("Fetching recent releases...", async () => {
+    const releases = await github.getRecentReleases({
+      owner,
+      repo,
+      since,
+      limit: inputs.releasesLimit,
+    });
+    core.info(`Found ${releases.length} releases`);
+    core.debug(JSON.stringify(releases, null, 2));
 
-      return releases;
-    },
-  );
+    return releases;
+  });
 
   const pullRequests = await core.group(
     "Fetching recent merged pull requests...",
