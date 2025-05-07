@@ -33143,7 +33143,7 @@ class GitHub {
         while (true) {
             // Fetch pull requests
             const response = await this.octokit.rest.search.issuesAndPullRequests({
-                q: `repo:${owner}/${repo} created:>${since.toISOString()} is:pr`,
+                q: `repo:${owner}/${repo} created:>${since.toISOString()} -author:app/dependabot -author:app/renovate is:pr`,
                 page,
                 per_page: 100,
             });
