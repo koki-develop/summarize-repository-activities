@@ -1,61 +1,51 @@
-# ts-action-template
+# Summarize Repository Activities
 
-[![GitHub Release](https://img.shields.io/github/v/release/koki-develop/ts-action-template)](https://github.com/koki-develop/ts-action-template/releases/latest)
-[![CI](https://img.shields.io/github/actions/workflow/status/koki-develop/ts-action-template/ci.yml?branch=main&logo=github&style=flat&label=ci)](https://github.com/koki-develop/ts-action-template/actions/workflows/ci.yml)
-[![Build](https://img.shields.io/github/actions/workflow/status/koki-develop/ts-action-template/build.yml?branch=main&logo=github&style=flat&label=build)](https://github.com/koki-develop/ts-action-template/actions/workflows/build.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/koki-develop/summarize-repository-activities)](https://github.com/koki-develop/summarize-repository-activities/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/koki-develop/summarize-repository-activities/ci.yml?branch=main&logo=github&style=flat&label=ci)](https://github.com/koki-develop/summarize-repository-activities/actions/workflows/ci.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/koki-develop/summarize-repository-activities/build.yml?branch=main&logo=github&style=flat&label=build)](https://github.com/koki-develop/summarize-repository-activities/actions/workflows/build.yml)
 
-This is a template for creating GitHub Actions in TypeScript.
+Summarize recent releases, pull requests, and issues of a repository.
 
-## Requirements
+## Usage
 
-[Bun](https://bun.sh/) is required.
+```yaml
+- uses: koki-develop/summarize-repository-activities@v1
+  with:
+    github-token: ${{ github.token }}
 
-## Getting Started
+    # Target activities from the specified number of days ago.
+    # (default: 7)
+    days-ago: 7
 
-1. Click the `Use this template` button to create a new repository.  
-2. Move to `Settings` > `Actions` > `General` and enable `Allow GitHub Actions to create and approve pull requests`.
+    # The Model to use for summarization.
+    # (default: openai/gpt-4o-mini)
+    ai-model: openai/gpt-4o-mini
 
-## Development
-
-Install dependencies with `bun install`.
-
-```console
-$ bun install
+    # The repository to summarize.
+    repository: hashicorp/terraform
 ```
 
-Edit [`action.yml`](./action.yml) to set up the action.  
-Edit [`src/main.ts`](./src/main.ts) to implement the action.
+Summarize Repository Activities uses GitHub Models by default, so the following permissions are required.
 
-## Test
-
-Run `bun run test` to test the action. The testing framework is [Vitest](https://vitest.dev/).
-
-```console
-$ bun run test
+```yaml
+permissions:
+  contents: read
+  models: read # to use GitHub Models
 ```
 
-## Release
+### Using any compatible API for summarization
 
-First, run `bun run build` to build the source code. The built code will be output to the `dist/` directory. Commit the content of this directory.
+Summarize Repository Activities uses the GitHub Models API (`https://models.github.ai/inference/chat/completions`) by default to generate summaries, but you can also use any compatible API if needed.  
+To customize the API used, specify `ai-api-endpoint` and `ai-api-key`.
 
-```console
-$ bun run build
-$ git add dist
-$ git commit -m "Build"
-```
-
-Finally, run the [release workflow](./.github/workflows/release.yml).  
-Tag creation and release creation are automatically performed.
-
-```sh
-# patch version
-$ gh workflow run release.yml -f level=patch
-
-# minor version
-$ gh workflow run release.yml -f level=minor
-
-# major version
-$ gh workflow run release.yml -f level=major
+```yaml
+# e.g. Use OpenAI API
+- uses: koki-develop/summarize-repository-activities@v1
+  with:
+    # ...
+    ai-api-endpoint: https://api.openai.com/v1/chat/completions
+    ai-api-key: ${{ secrets.OPENAI_API_KEY }}
+    ai-model: gpt-4o-mini
 ```
 
 ## LICENSE
