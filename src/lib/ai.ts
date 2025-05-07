@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import type { Issue, PullRequest, Release } from "./github";
 import { removeChecklist, removeComment } from "./util";
 
@@ -144,6 +145,10 @@ export class AI {
   }
 
   private async _generateText(params: GenerateTextParams): Promise<string> {
+    core.debug(`Generating text with ${this._config.model}`);
+    core.debug(`systemPrompt: ${JSON.stringify(params.systemPrompt)}`);
+    core.debug(`prompt: ${JSON.stringify(params.prompt)}`);
+
     const response = await fetch(this._config.endpoint, {
       method: "POST",
       headers: {
