@@ -1,4 +1,5 @@
 import { getOctokit } from "@actions/github";
+import { sleep } from "./util";
 
 export type Release = {
   name: string;
@@ -66,6 +67,8 @@ export class GitHub {
 
     let page = 1;
     while (true) {
+      await sleep(1000);
+
       // Fetch releases
       const response = await this.octokit.rest.repos.listReleases({
         owner,
@@ -111,6 +114,8 @@ export class GitHub {
 
     let page = 1;
     while (true) {
+      await sleep(1000);
+
       // Fetch pull requests
       const response = await this.octokit.rest.search.issuesAndPullRequests({
         q: `repo:${owner}/${repo} created:>${since.toISOString()} -author:app/dependabot -author:app/renovate is:pr`,
@@ -153,6 +158,8 @@ export class GitHub {
 
     let page = 1;
     while (true) {
+      await sleep(1000);
+
       // Fetch issues
       const response = await this.octokit.rest.search.issuesAndPullRequests({
         q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,

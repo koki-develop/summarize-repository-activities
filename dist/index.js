@@ -33096,6 +33096,7 @@ function _cleanMarkdown(markdown) {
 var github = __nccwpck_require__(3228);
 ;// CONCATENATED MODULE: ./src/lib/github.ts
 
+
 class GitHub {
     octokit;
     constructor(token) {
@@ -33105,6 +33106,7 @@ class GitHub {
         const releases = [];
         let page = 1;
         while (true) {
+            await sleep(1000);
             // Fetch releases
             const response = await this.octokit.rest.repos.listReleases({
                 owner,
@@ -33141,6 +33143,7 @@ class GitHub {
         const pullRequests = [];
         let page = 1;
         while (true) {
+            await sleep(1000);
             // Fetch pull requests
             const response = await this.octokit.rest.search.issuesAndPullRequests({
                 q: `repo:${owner}/${repo} created:>${since.toISOString()} -author:app/dependabot -author:app/renovate is:pr`,
@@ -33173,6 +33176,7 @@ class GitHub {
         const issues = [];
         let page = 1;
         while (true) {
+            await sleep(1000);
             // Fetch issues
             const response = await this.octokit.rest.search.issuesAndPullRequests({
                 q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
