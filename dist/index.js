@@ -33274,41 +33274,59 @@ const action = async (inputs) => {
     // Releases
     core.info("Summarizing releases...");
     summaries.push("## Releases", "");
-    summaries.push("| Title | Summary |", "| --- | --- |");
-    for (const release of releases) {
-        await core.group(release.name, async () => {
-            const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizeRelease({ owner, repo, release }));
-            core.info(summary);
-            summaries.push(`| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** (_${yyyymmdd(release.publishedAt)}_) | ${summary} |`);
-        });
+    if (releases.length === 0) {
+        summaries.push("No releases found");
+    }
+    else {
+        summaries.push("| Title | Summary |", "| --- | --- |");
+        for (const release of releases) {
+            await core.group(release.name, async () => {
+                const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizeRelease({ owner, repo, release }));
+                core.info(summary);
+                summaries.push(`| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** (_${yyyymmdd(release.publishedAt)}_) | ${summary} |`);
+            });
+        }
     }
     summaries.push("");
     // Pull Requests
     core.info("Summarizing pull requests...");
     summaries.push("## Pull Requests", "");
-    summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
-    for (const pullRequest of pullRequests) {
-        await core.group(pullRequest.title, async () => {
-            const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizePullRequest({ owner, repo, pullRequest }));
-            core.info(summary);
-            summaries.push(`| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.createdAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`);
-        });
+    if (pullRequests.length === 0) {
+        summaries.push("No pull requests found");
+    }
+    else {
+        summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
+        for (const pullRequest of pullRequests) {
+            await core.group(pullRequest.title, async () => {
+                const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizePullRequest({ owner, repo, pullRequest }));
+                core.info(summary);
+                summaries.push(`| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.createdAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`);
+            });
+        }
     }
     summaries.push("");
     // Issues
     core.info("Summarizing issues...");
     summaries.push("## Issues", "");
-    summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
-    for (const issue of issues) {
-        await core.group(issue.title, async () => {
-            const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizeIssue({ owner, repo, issue }));
-            core.info(summary);
-            summaries.push(`| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** (_${yyyymmdd(issue.createdAt)}_) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`);
-        });
+    if (issues.length === 0) {
+        summaries.push("No issues found");
+    }
+    else {
+        summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
+        for (const issue of issues) {
+            await core.group(issue.title, async () => {
+                const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizeIssue({ owner, repo, issue }));
+                core.info(summary);
+                summaries.push(`| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** (_${yyyymmdd(issue.createdAt)}_) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`);
+            });
+        }
     }
     summaries.push("");
     return {
         summary: summaries.join("\n"),
+        hasNewRelease: releases.length > 0,
+        hasNewPullRequest: pullRequests.length > 0,
+        hasNewIssue: issues.length > 0,
     };
 };
 function _labelsToBadges(owner, repo, labels) {
@@ -33389,6 +33407,9 @@ const main = async () => {
             issuesLimit: Number(inputs.issuesLimit) || 10,
         });
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("summary", outputs.summary);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("has-new-release", outputs.hasNewRelease);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("has-new-pull-request", outputs.hasNewPullRequest);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("has-new-issue", outputs.hasNewIssue);
     }
     catch (error) {
         if (error instanceof Error) {
