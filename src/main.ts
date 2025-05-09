@@ -63,6 +63,9 @@ export const main = async () => {
     });
 
     core.setOutput("summary", outputs.summary);
+    core.setOutput("has-new-release", outputs.hasNewRelease);
+    core.setOutput("has-new-pull-request", outputs.hasNewPullRequest);
+    core.setOutput("has-new-issue", outputs.hasNewIssue);
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);

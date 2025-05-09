@@ -52,7 +52,12 @@ inputs:
 outputs:
   summary:
     description: The summary of the repository activities.
-
+  has-new-release:
+    description: Whether the repository has a new release.
+  has-new-pull-request:
+    description: Whether the repository has a new pull request.
+  has-new-issue:
+    description: Whether the repository has a new issue.
 runs:
   using: node20
   main: dist/index.js
