@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import { AI, type Locale } from "./lib/ai";
 import { GitHub, type Label } from "./lib/github";
-import { sleep, yyyymmdd } from "./lib/util";
+import { exponentialBackoff, yyyymmdd } from "./lib/util";
 
 export type Inputs = {
   githubToken: string;
@@ -88,12 +88,10 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   summaries.push("| Title | Summary |", "| --- | --- |");
   for (const release of releases) {
     await core.group(release.name, async () => {
-      await sleep(5000);
-      const summary = await ai.summarizeRelease({
-        owner,
-        repo,
-        release,
-      });
+      const summary = await exponentialBackoff(
+        { maxRetries: 5, initialDelay: 2000 },
+        () => ai.summarizeRelease({ owner, repo, release }),
+      );
       core.info(summary);
       summaries.push(
         `| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** (_${yyyymmdd(release.publishedAt)}_) | ${summary} |`,
@@ -108,12 +106,10 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
   for (const pullRequest of pullRequests) {
     await core.group(pullRequest.title, async () => {
-      await sleep(5000);
-      const summary = await ai.summarizePullRequest({
-        owner,
-        repo,
-        pullRequest,
-      });
+      const summary = await exponentialBackoff(
+        { maxRetries: 5, initialDelay: 2000 },
+        () => ai.summarizePullRequest({ owner, repo, pullRequest }),
+      );
       core.info(summary);
       summaries.push(
         `| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.createdAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`,
@@ -128,12 +124,10 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
   summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
   for (const issue of issues) {
     await core.group(issue.title, async () => {
-      await sleep(5000);
-      const summary = await ai.summarizeIssue({
-        owner,
-        repo,
-        issue,
-      });
+      const summary = await exponentialBackoff(
+        { maxRetries: 5, initialDelay: 2000 },
+        () => ai.summarizeIssue({ owner, repo, issue }),
+      );
       core.info(summary);
       summaries.push(
         `| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** (_${yyyymmdd(issue.createdAt)}_) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`,

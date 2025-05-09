@@ -1,5 +1,5 @@
 import { getOctokit } from "@actions/github";
-import { sleep } from "./util";
+import { exponentialBackoff } from "./util";
 
 export type Release = {
   name: string;
@@ -67,15 +67,17 @@ export class GitHub {
 
     let page = 1;
     while (true) {
-      await sleep(1000);
-
       // Fetch releases
-      const response = await this.octokit.rest.repos.listReleases({
-        owner,
-        repo,
-        page,
-        per_page: 100,
-      });
+      const response = await exponentialBackoff(
+        { maxRetries: 5, initialDelay: 2000 },
+        () =>
+          this.octokit.rest.repos.listReleases({
+            owner,
+            repo,
+            page,
+            per_page: 100,
+          }),
+      );
 
       // Filter out releases where `published_at` is before `since`
       const filtered = response.data.filter((release) => {
@@ -114,14 +116,16 @@ export class GitHub {
 
     let page = 1;
     while (true) {
-      await sleep(1000);
-
       // Fetch pull requests
-      const response = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `repo:${owner}/${repo} created:>${since.toISOString()} -author:app/dependabot -author:app/renovate is:pr`,
-        page,
-        per_page: 100,
-      });
+      const response = await exponentialBackoff(
+        { maxRetries: 5, initialDelay: 2000 },
+        () =>
+          this.octokit.rest.search.issuesAndPullRequests({
+            q: `repo:${owner}/${repo} created:>${since.toISOString()} -author:app/dependabot -author:app/renovate is:pr`,
+            page,
+            per_page: 100,
+          }),
+      );
       if (response.data.items.length === 0) break;
 
       // Push filtered pull requests
@@ -158,14 +162,16 @@ export class GitHub {
 
     let page = 1;
     while (true) {
-      await sleep(1000);
-
       // Fetch issues
-      const response = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
-        page,
-        per_page: 100,
-      });
+      const response = await exponentialBackoff(
+        { maxRetries: 5, initialDelay: 2000 },
+        () =>
+          this.octokit.rest.search.issuesAndPullRequests({
+            q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
+            page,
+            per_page: 100,
+          }),
+      );
       if (response.data.items.length === 0) break;
 
       issues.push(

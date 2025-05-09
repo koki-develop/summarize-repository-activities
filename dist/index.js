@@ -32967,6 +32967,20 @@ function yyyymmdd(date) {
 async function sleep(ms) {
     return new Promise((resolve) => (0,external_node_timers_namespaceObject.setTimeout)(resolve, ms));
 }
+async function exponentialBackoff({ maxRetries, initialDelay, }, fn) {
+    let retries = 0;
+    while (true) {
+        try {
+            return await fn();
+        }
+        catch (error) {
+            if (retries >= maxRetries)
+                throw error;
+            await sleep(initialDelay * 2 ** retries);
+            retries++;
+        }
+    }
+}
 
 ;// CONCATENATED MODULE: ./src/lib/ai.ts
 
@@ -33106,14 +33120,13 @@ class GitHub {
         const releases = [];
         let page = 1;
         while (true) {
-            await sleep(1000);
             // Fetch releases
-            const response = await this.octokit.rest.repos.listReleases({
+            const response = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => this.octokit.rest.repos.listReleases({
                 owner,
                 repo,
                 page,
                 per_page: 100,
-            });
+            }));
             // Filter out releases where `published_at` is before `since`
             const filtered = response.data.filter((release) => {
                 if (!release.published_at)
@@ -33143,13 +33156,12 @@ class GitHub {
         const pullRequests = [];
         let page = 1;
         while (true) {
-            await sleep(1000);
             // Fetch pull requests
-            const response = await this.octokit.rest.search.issuesAndPullRequests({
+            const response = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => this.octokit.rest.search.issuesAndPullRequests({
                 q: `repo:${owner}/${repo} created:>${since.toISOString()} -author:app/dependabot -author:app/renovate is:pr`,
                 page,
                 per_page: 100,
-            });
+            }));
             if (response.data.items.length === 0)
                 break;
             // Push filtered pull requests
@@ -33176,13 +33188,12 @@ class GitHub {
         const issues = [];
         let page = 1;
         while (true) {
-            await sleep(1000);
             // Fetch issues
-            const response = await this.octokit.rest.search.issuesAndPullRequests({
+            const response = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => this.octokit.rest.search.issuesAndPullRequests({
                 q: `repo:${owner}/${repo} created:>${since.toISOString()} is:issue`,
                 page,
                 per_page: 100,
-            });
+            }));
             if (response.data.items.length === 0)
                 break;
             issues.push(...response.data.items.map((issue) => ({
@@ -33266,12 +33277,7 @@ const action = async (inputs) => {
     summaries.push("| Title | Summary |", "| --- | --- |");
     for (const release of releases) {
         await core.group(release.name, async () => {
-            await sleep(5000);
-            const summary = await ai.summarizeRelease({
-                owner,
-                repo,
-                release,
-            });
+            const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizeRelease({ owner, repo, release }));
             core.info(summary);
             summaries.push(`| **[${release.name}](https://github.com/${owner}/${repo}/releases/tag/${release.tagName})** (_${yyyymmdd(release.publishedAt)}_) | ${summary} |`);
         });
@@ -33283,12 +33289,7 @@ const action = async (inputs) => {
     summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
     for (const pullRequest of pullRequests) {
         await core.group(pullRequest.title, async () => {
-            await sleep(5000);
-            const summary = await ai.summarizePullRequest({
-                owner,
-                repo,
-                pullRequest,
-            });
+            const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizePullRequest({ owner, repo, pullRequest }));
             core.info(summary);
             summaries.push(`| **[${pullRequest.title}](https://github.com/${owner}/${repo}/pull/${pullRequest.number})** (_${yyyymmdd(pullRequest.createdAt)}_) | ${_labelsToBadges(owner, repo, pullRequest.labels)} | ${summary} |`);
         });
@@ -33300,12 +33301,7 @@ const action = async (inputs) => {
     summaries.push("| Title | Labels | Summary |", "| --- | --- | --- |");
     for (const issue of issues) {
         await core.group(issue.title, async () => {
-            await sleep(5000);
-            const summary = await ai.summarizeIssue({
-                owner,
-                repo,
-                issue,
-            });
+            const summary = await exponentialBackoff({ maxRetries: 5, initialDelay: 2000 }, () => ai.summarizeIssue({ owner, repo, issue }));
             core.info(summary);
             summaries.push(`| **[${issue.title}](https://github.com/${owner}/${repo}/issues/${issue.number})** (_${yyyymmdd(issue.createdAt)}_) | ${_labelsToBadges(owner, repo, issue.labels)} | ${summary} |`);
         });

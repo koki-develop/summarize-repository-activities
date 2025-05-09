@@ -21,3 +21,25 @@ export function yyyymmdd(date: Date): string {
 export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export async function exponentialBackoff<T>(
+  {
+    maxRetries,
+    initialDelay,
+  }: {
+    maxRetries: number;
+    initialDelay: number;
+  },
+  fn: () => Promise<T>,
+): Promise<T> {
+  let retries = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (retries >= maxRetries) throw error;
+      await sleep(initialDelay * 2 ** retries);
+      retries++;
+    }
+  }
+}
