@@ -33162,7 +33162,7 @@ class GitHub {
                 page,
                 per_page: 100,
             }));
-            if (response.data.items.length === 0)
+            if (response.data.items.length < 100)
                 break;
             // Push filtered pull requests
             pullRequests.push(...response.data.items.map((p) => ({
@@ -33194,7 +33194,7 @@ class GitHub {
                 page,
                 per_page: 100,
             }));
-            if (response.data.items.length === 0)
+            if (response.data.items.length < 100)
                 break;
             issues.push(...response.data.items.map((issue) => ({
                 number: issue.number,

@@ -126,7 +126,7 @@ export class GitHub {
             per_page: 100,
           }),
       );
-      if (response.data.items.length === 0) break;
+      if (response.data.items.length < 100) break;
 
       // Push filtered pull requests
       pullRequests.push(
@@ -172,7 +172,7 @@ export class GitHub {
             per_page: 100,
           }),
       );
-      if (response.data.items.length === 0) break;
+      if (response.data.items.length < 100) break;
 
       issues.push(
         ...response.data.items.map((issue) => ({
