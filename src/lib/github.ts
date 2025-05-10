@@ -126,7 +126,6 @@ export class GitHub {
             per_page: 100,
           }),
       );
-      if (response.data.items.length < 100) break;
 
       // Push filtered pull requests
       pullRequests.push(
@@ -143,6 +142,7 @@ export class GitHub {
           }),
         })),
       );
+      if (response.data.items.length < 100) break;
       if (pullRequests.length >= limit) break;
 
       // Increment page
@@ -172,7 +172,6 @@ export class GitHub {
             per_page: 100,
           }),
       );
-      if (response.data.items.length < 100) break;
 
       issues.push(
         ...response.data.items.map((issue) => ({
@@ -188,6 +187,7 @@ export class GitHub {
           }),
         })),
       );
+      if (response.data.items.length < 100) break;
       if (issues.length >= limit) break;
 
       // Increment page

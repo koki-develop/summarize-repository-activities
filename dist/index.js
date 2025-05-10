@@ -33162,8 +33162,6 @@ class GitHub {
                 page,
                 per_page: 100,
             }));
-            if (response.data.items.length < 100)
-                break;
             // Push filtered pull requests
             pullRequests.push(...response.data.items.map((p) => ({
                 number: p.number,
@@ -33177,6 +33175,8 @@ class GitHub {
                     return { name: label.name ?? "", color: label.color ?? "" };
                 }),
             })));
+            if (response.data.items.length < 100)
+                break;
             if (pullRequests.length >= limit)
                 break;
             // Increment page
@@ -33194,8 +33194,6 @@ class GitHub {
                 page,
                 per_page: 100,
             }));
-            if (response.data.items.length < 100)
-                break;
             issues.push(...response.data.items.map((issue) => ({
                 number: issue.number,
                 title: issue.title,
@@ -33208,6 +33206,8 @@ class GitHub {
                     return { name: label.name ?? "", color: label.color ?? "" };
                 }),
             })));
+            if (response.data.items.length < 100)
+                break;
             if (issues.length >= limit)
                 break;
             // Increment page
