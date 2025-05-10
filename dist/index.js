@@ -33237,6 +33237,7 @@ const action = async (inputs) => {
     const [owner, repo] = owner_repo;
     const since = new Date();
     since.setDate(since.getUTCDate() - inputs.daysAgo);
+    since.setUTCHours(0, 0, 0, 0);
     const releases = await core.group("Fetching recent releases...", async () => {
         const releases = await github.getRecentReleases({
             owner,

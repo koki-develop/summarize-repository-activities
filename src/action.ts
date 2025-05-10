@@ -40,6 +40,7 @@ export const action = async (inputs: Inputs): Promise<Outputs> => {
 
   const since = new Date();
   since.setDate(since.getUTCDate() - inputs.daysAgo);
+  since.setUTCHours(0, 0, 0, 0);
 
   const releases = await core.group("Fetching recent releases...", async () => {
     const releases = await github.getRecentReleases({
